@@ -1,0 +1,1106 @@
+_id: spc_47c7d92ffafc4839abf74b38be356471
+contentType: yaml
+contents: >-
+  swagger: "2.0"
+
+  info:
+    description: "Bestv VIS Admin后台api接口文档"
+    version: "1.0.0"
+    title: "Bestv VIS Admin Api"
+    contact:
+      email: "zhao.haisheng@opg.cn"
+  host: "10.61.13.87:8082"
+
+  basePath: "/vis"
+
+  tags:
+
+  - name: "user"
+    description: "用户管理api"
+  - name: "template"
+    description: "模板管理api"
+  - name: "subject"
+    description: "专题操作api"
+  - name: "station"
+    description: "驻地管理api"
+  - name: "category"
+    description: "分类管理api"
+  schemes:
+
+  - "http"
+
+  paths:
+    /user/permission:
+      get:
+        tags:
+        - "user"
+        summary: "用户权限"
+        description: "根据用户Id获取用户菜单权限。用户登录老系统后，老系统后台服务带上用户id再跳转新系统"
+        consumes:
+        - "application/x-www-form-urlencoded"
+        parameters:
+        - name: "userId"
+          in: "query"
+          description: "用户id"
+          required: true
+          type: "string"
+        responses:
+          200:
+            description: "用户权限信息"
+            schema:
+              $ref: "#/definitions/UserPermission"
+          404:
+            description: "User not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+    /user/list:
+      get:
+        tags:
+        - "user"
+        summary: "用户列表"
+        description: "获取用户列表"
+        parameters:
+          - name: "userName"
+            in: "query"
+            type: "string"
+            description: "根据用户名匹配"
+        responses:
+          200:
+            description: "用户列表,注意信息脱敏"
+            schema:
+              type: "array"
+              items:
+                $ref: "#/definitions/Operator"
+          403:
+            description: "forbidden"
+    /user/productgroup/list:
+      get:
+        tags:
+        - "user"
+        description: "列出用户产品组"
+        summary: "列出用户产品组"
+        parameters:
+        - in: "query"
+          name: "name"
+          type: "string"
+          description: "产品组名字模糊查询"
+        responses:
+          200:
+            description: "查询成功"
+            schema:
+              type: "array"
+              items:
+                $ref: '#/definitions/OperatorProductGroup'
+
+    /template/subject/list:
+      get:
+        tags:
+        - "template"
+        summary: "获取模板列表"
+        description: "根据查询条件，获取模板列表"
+        parameters:
+          - name: "name"
+            in: "query"
+            type: "string"
+            description: "模板名称，模糊匹配"
+          - name: "code"
+            type: "string"
+            in: "query"
+            description: "模板编码"
+          - name: "startTime"
+            in: "query"
+            type: "string"
+            description: "更新起始时间,统一用时间戳表示"
+          - name: "endTime"
+            in: "query"
+            type: "string"
+            description: "更新截止时间,统一用时间戳表示"
+          - in: "query"
+            name: "current"
+            type: "integer"
+            default: "1"
+            description: "查询第current页"
+          - in: "query"
+            name: "size"
+            type: "integer"
+            default: "20"
+            description: "每页size大小"
+          - in: "query"
+            name: "dataInit"
+            type: "boolean"
+            default: "false"
+            description: "true=加载所有模板信息，包含模板参数;false=分页查询模板"
+        responses:
+          200:
+            description: "满足查询条件的专题模板列表"
+            schema:
+              type: "object"
+              properties:
+                list:
+                  type: "array"
+                  items:
+                    $ref: '#/definitions/Template'
+                page:
+                  $ref: '#/definitions/PageBean'
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /template/subject/{tempCode}:
+      parameters:
+        - in: "path"
+          name: "tempCode"
+          type: "string"
+          description: "专题模板code"
+          required: true
+      get:
+        tags:
+        - "template"
+        summary: "专题模板详情"
+        description: "根据专题模板id，获取专题模板详情"
+        responses:
+          200:
+            description: "查询专题模板详情"
+            schema:
+              $ref: "#/definitions/Template"
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+      put:
+        tags:
+        - "template"
+        summary: "更新专题模板"
+        description: "更新专题模板对象"
+        consumes:
+          - "multipart/form-data"
+        parameters:
+        - in: "formData"
+          name: "showName"
+          type: "string"
+          description: "名称"
+        - in: "formData"
+          name: "file"
+          type: "file"
+          description: "模板文件"
+        responses:
+          200:
+            description: "更新成功"
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+      delete:
+        tags:
+        - "template"
+        summary: "删除专题模板"
+        description: "发布专题模板对象"
+        responses:
+          200:
+            description: "发布成功"
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /template/subject/{tempCode}/file:
+      get:
+        tags:
+        - "template"
+        summary: "查看专题模板文件"
+        description: "根据专题模板id，获取专题模板文件信息"
+        parameters:
+        - in: "path"
+          name: "tempCode"
+          type: "string"
+          required: true
+          description: "专题模板id"
+        responses:
+          200:
+            description: "查询专题模板文件"
+            schema:
+              $ref: "#/definitions/FileVO"
+          404:
+            description: "Subject Template File not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /template/subject:
+      post:
+        tags:
+        - "template"
+        summary: "新建专题模板"
+        description: "新建专题模板对象"
+        consumes:
+          - "multipart/form-data"
+        parameters:
+        - in: "formData"
+          name: "showName"
+          type: "string"
+          description: "名称"
+        - in: "formData"
+          name: "file"
+          type: "file"
+          description: "模板文件"
+        responses:
+          200:
+            description: "模板code"
+            schema:
+              type: "object"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /template/subject/{tempCode}/publish:
+      post:
+        tags:
+        - "template"
+        summary: "发布专题模板"
+        description: "发布专题模板对象"
+        parameters:
+        - in: "path"
+          name: "tempCode"
+          type: "string"
+          required: true
+          description: "专题模板id"
+        responses:
+          200:
+            description: "发布成功"
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /subject/list:
+      get:
+        tags:
+        - "subject"
+        summary: "专题列表"
+        description: "以分页的方式获取专题列表,template和cagegorys为null"
+        parameters:
+        - in: "query"
+          name: "current"
+          type: "integer"
+          default: "1"
+          description: "查询第current页"
+        - in: "query"
+          name: "size"
+          type: "integer"
+          default: "20"
+          description: "每页size大小"
+        - in: "query"
+          name: "name"
+          type: "string"
+          description: "按名字模糊查询"
+        - in: "query"
+          name: "code"
+          type: "string"
+          description: "按编码精确查询"
+        - in: "query"
+          name: "whoHave"
+          type: "string"
+          description: "所属对象,个人,所有"
+          default: 'personal'
+          enum:
+            - 'personal'
+            - 'all'
+        - in: "query"
+          name: "orderType"
+          type: "string"
+          description: "订购类型,免费,收费,垫片订购"
+          enum:
+            - 'free'
+            - 'fee'
+            - 'dianpian'
+        - in: "query"
+          name: "opeGroupCode"
+          type: "string"
+          description: "所属产品组code数组,单选单个code"
+        - in: "query"
+          name: "templateName"
+          description: "模板名称"
+          type: "string"
+        responses:
+          200:
+            description: "满足查询条件的专题列表"
+            schema:
+              type: "object"
+              properties:
+                list:
+                  type: "array"
+                  items:
+                    $ref: '#/definitions/Subject'
+                page:
+                  $ref: '#/definitions/PageBean'
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+    /subject:
+      post:
+        tags:
+        - "subject"
+        summary: "新建专题数据"
+        description: "新建专题数据"
+        consumes:
+        - "application/json"
+        produces:
+        - "application/json"
+        parameters:
+        - in: "body"
+          name: "subject"
+          description: "subject data"
+          required: true
+          schema:
+            $ref: "#/definitions/Subject"
+        responses:
+          200:
+            description: "subject"
+            schema:
+              type: "object"
+              properties:
+                code:
+                  type: "string"
+                  format: "uuid"
+                  description: "新建专题成功后的code"
+
+    /subject/{code}/images:
+      post:
+        tags:
+        - "subject"
+        summary: "专题图片"
+        description: "添加或修改专题图片"
+        consumes:
+        - "multipart/form-data"
+        parameters:
+        - in: "path"
+          name: "code"
+          type: "string"
+          description: "专题code"
+          required: true
+        - in: "formData"
+          name: "action"
+          description: "insert 新建 update 更新"
+          type: 'string'
+          enum:
+            - 'insert'
+            - 'update'
+          default: "insert"
+        - in: "formData"
+          name: "still"
+          description: "剧照"
+          type: 'file'
+        - in: "formData"
+          name: "short"
+          description: "缩略图"
+          type: 'file'
+        - in: "formData"
+          name: "poster"
+          description: "海报"
+          type: 'file'
+        responses:
+          200:
+            description: "subject"
+            schema:
+              type: "object"
+              properties:
+                code:
+                  type: "string"
+                  format: "uuid"
+                  description: "新建专题成功后的code"
+
+    /subject/{code}:
+      parameters:
+        - in: "path"
+          name: "code"
+          type: "string"
+          description: "专题code"
+          required: true
+      get:
+        tags:
+        - "subject"
+        summary: "专题详情"
+        description: "获取专题详情"
+        responses:
+          200:
+            description: "获取subjectId的专题详情"
+            schema:
+              $ref: "#/definitions/Subject"
+          # 400:
+          #   description: "Invalid Code supplied"
+          # 404:
+          #   description: "Subject not found"
+      put:
+        tags:
+        - "subject"
+        summary: "更新专题"
+        description: "更新专题,注意code等之类的字段不能更新"
+        consumes:
+        - "application/json"
+        parameters:
+        - in: "body"
+          name: "subject"
+          schema:
+            $ref: '#/definitions/Subject'
+        responses:
+          400:
+            description: "Invalid ID supplied"
+          404:
+            description: "Subject not found"
+      delete:
+        tags:
+        - "subject"
+        summary: "删除专题"
+        description: "删除专题"
+        responses:
+          200:
+            description: "delete success"
+          400:
+            description: "Invalid Code supplied"
+          404:
+            description: "Subject not found"
+
+    /subject/{code}/activeStatus:
+      put:
+        tags:
+          - "subject"
+        summary: "失效专题"
+        description: "根据id找到专题，失效状态"
+        parameters:
+        - in: "path"
+          name: "code"
+          type: "string"
+          description: "专题id"
+          required: true
+        - in: "query"
+          name: "activeStatus"
+          type: "string"
+          enum:
+           - 'active'
+           - 'inactive'
+          required: true
+        responses:
+          200:
+            description: "失效成功"
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /station/list:
+      get:
+        tags:
+        - "station"
+        description: "驻地查询"
+        summary: "驻地查询"
+        parameters:
+        - in: "query"
+          name: "current"
+          type: "integer"
+          default: "1"
+          description: "查询第current页"
+        - in: "query"
+          name: "size"
+          type: "integer"
+          default: "20"
+          description: "每页size大小"
+        responses:
+          200:
+            description: "查询成功"
+            schema:
+              type: "object"
+              properties:
+                list:
+                  type: "array"
+                  items:
+                    $ref: '#/definitions/VasBranch'
+                page:
+                  $ref: '#/definitions/PageBean'
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /category/list:
+      get:
+        tags:
+        - "category"
+        description: "分类查询"
+        summary: "分类查询"
+        parameters:
+        - in: "query"
+          name: "current"
+          type: "integer"
+          default: "1"
+          description: "查询第current页"
+        - in: "query"
+          name: "size"
+          type: "integer"
+          default: "20"
+          description: "每页size大小"
+        responses:
+          200:
+            description: "查询成功"
+            schema:
+              type: "object"
+              properties:
+                list:
+                  type: "array"
+                  items:
+                    $ref: '#/definitions/Category'
+                page:
+                  $ref: '#/definitions/PageBean'
+          404:
+            description: "Subject Template not found"
+          400:
+            description: "可能的其他异常"
+            schema:
+              $ref: "#/definitions/BadRequestError"
+
+    /category/{code}:
+      get:
+        tags:
+        - "category"
+        description: "分类详情"
+        parameters:
+        - in: "path"
+          name: "code"
+          type: "string"
+          required: true
+        responses:
+          200:
+            description: "获取栏目code的专题详情"
+            schema:
+              $ref: "#/definitions/Category"
+          400:
+            description: "Invalid Code supplied"
+          404:
+            description: "Subject not found"
+
+    /category/{code}/item:
+      get:
+        tags:
+        - "category"
+        description: "栏目编排"
+        parameters:
+        - in: "path"
+          name: "code"
+          type: "string"
+          required: true
+        responses:
+          200:
+            description: "获取栏目code的编排"
+            schema:
+              $ref: "#/definitions/Category"
+          400:
+            description: "Invalid Code supplied"
+          404:
+            description: "Subject not found"
+
+  definitions:
+
+    UserPermission:
+      type: "object"
+      description:  "登录用户权限对象"
+      properties:
+        user:
+          $ref: "#/definitions/Operator"
+        menuPermission:
+          $ref: "#/definitions/Permission"
+        actionPermission:
+          $ref: "#/definitions/Permission"
+    Operator:
+      type: "object"
+      description: "系统用户对象"
+      properties:
+        code:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        loginName:
+          type: "string"
+        password:
+          type: "string"
+        status:
+          type: "integer"
+        errorPasswordCounter:
+          type: "integer"
+        lockTime:
+          type: "string"
+        email:
+          type: "string"
+    Permission:
+      type: "object"
+      description: "用户权限"
+      properties:
+        id:
+          type: "integer"
+        name:
+          type: "string"
+          description: "权限节点名称"
+        type:
+          type: "string"
+          enum:
+            - '0'
+            - '1'
+          description: "0=菜单权限，1=按钮权限"
+        parentId:
+          type: "integer"
+        imagePath:
+          type: "string"
+          description: "对应remix icon的图标"
+        path:
+          type: "string"
+          description: "当前节点路径"
+        urlPath:
+          type: "string"
+        order:
+          type: "integer"
+        flag:
+          type: "integer"
+        children:
+          type: "array"
+          items:
+            $ref: "#/definitions/Permission"
+    PageBean:
+      type: "object"
+      description: "分页数据"
+      required:
+      - "current"
+      - "size"
+      properties:
+        current:
+          type: "integer"
+          description: "当前页"
+        total:
+          type: "integer"
+          description: "总记录数"
+        size:
+          type: "integer"
+          description: "每页的大小"
+    Subject:
+      type: "object"
+      description: "专题对象"
+      properties:
+        code:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        showName:
+          type: "string"
+        status:
+          type: "string"
+          enum:
+            - 'init'
+            - 'del'
+            - 'publish'
+            - 'edit'
+            - 'publish_del'
+        activeStatus:
+          type: "string"
+          enum:
+            - 'active'
+            - 'inactive'
+        opeGroupCode:
+          type: "string"
+          description: "多个code以逗号分隔"
+        orderType:
+          type: "string"
+          enum:
+            - 'free'
+            - 'fee'
+            - 'dianpian'
+        sources:
+          type: "string"
+          enum:
+            - 'center'
+            - 'station'
+        whoHave:
+          type: "string"
+          enum:
+            - 'personal'
+            - 'all'
+        lastUpdateTime:
+          type: "string"
+          format: "datetime"
+        publishiTime:
+          type: "string"
+          format: "datetime"
+        iconImage:
+          type: "string"
+        posterImag:
+          type: "string"
+        stagePhoto:
+          type: "string"
+        validTime:
+          type: "string"
+          format: "date-time"
+        expireTime:
+          type: "string"
+          format: "date-time"
+        templateName:
+          type: "string"
+        templateCode:
+          type: "string"
+        dpCode:
+          type: "string"
+        pages:
+          type: "array"
+          items:
+            $ref:  '#/definitions/SubjectPage'
+    SubjectPage:
+      type: "object"
+      description: "专题页"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "string"
+        subjectCode:
+          type: "string"
+        templateCode:
+          type: "string"
+        regions:
+          type: "array"
+          items:
+            $ref: '#/definitions/SubjectRegion'
+    SubjectRegion:
+      type: "object"
+      description: "专题区域"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "string"
+        name:
+          type: "string"
+        pageCode:
+          type: "string"
+        index:
+          type: "integer"
+        region:
+          type: "string"
+          description: "定位值 四位"
+        regionValues:
+          type: "string"
+        regionValueType:
+          type: "string"
+          enum:
+            - 'url'
+            - 'category'
+            - 'vod'
+    RelTemplateSubjectPage:
+      type: "object"
+      description: "模板和专题绑定关系"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "string"
+        templateCode:
+          type: "string"
+        subjectPageCode:
+          type: "string"
+    Template:
+      type: "object"
+      description: "模板对象"
+      properties:
+        id:
+          type: "integer"
+          description: "模板id"
+        code:
+          type: "string"
+          description: "编码"
+          format: "uuid"
+        name:
+          description: "代码包中的唯一名称"
+          type: "string"
+        showName:
+          description: "编辑使用的显示名称"
+          type: "string"
+        author:
+          description: "作者(operator name?)"
+          type: "string"
+        publishVersion:
+          type: "string"
+        publishDate:
+          type: "string"
+        localFlag:
+          type: "string"
+          enum:
+            - 'true'
+            - 'false'
+        version:
+          type: "string"
+        showType:
+          type: "string"
+          enum:
+            - '0'
+            - '1'
+          description: "0=展示，1=不展示"
+        startTime:
+          type: "string"
+          description: "更新起始时间，yyyyMMddhhmmdd"
+        endTime:
+          type: "string"
+          description: "更新截止时间，yyyyMMddhhmmdd"
+        lastUpdateTime:
+          description: "更新时间"
+          type: "string"
+        origin:
+          description: "来源（中央=0,驻地=1）"
+          type: "integer"
+        temlateType:
+          type: "string"
+          enum:
+            - 'portal'
+            - 'category'
+            - 'star'
+            - 'vod'
+        path:
+          type: "string"
+        previewPath:
+          type: "string"
+        description:
+          type: "string"
+          description: "模板描述信息"
+          format: "cparagraph"
+        paramDefs:
+          type: "array"
+          items:
+            $ref: '#/definitions/TemplateParamDef'
+    TemplateParamDef:
+      type: "object"
+      description: "模板参数定义对象"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "string"
+        name:
+          type: "string"
+        type:
+          type: "string"
+          enum:
+            - 'url'
+            - 'image'
+            - 'position'
+            - 'trailer'
+            - 'category'
+            - 'vodlist'
+        defaultValue:
+          type: "string"
+        description:
+          type: "string"
+        region:
+          type: "string"
+          description: "四位定位坐标 top left leght width"
+        top:
+          type: "integer"
+          description: "像素px"
+        left:
+          type: "integer"
+          description: "像素px"
+        height:
+          type: "integer"
+          description: "像素px"
+        width:
+          type: "integer"
+          description: "像素px"
+    Category:
+      type: "object"
+      description: "分类对象.分类对象绑定到模板上时,按照模板区域的数组索引进行顺序匹配,即subject.category[0]匹配subject.template.areas[0].如果该区域没有绑定分类则此处分类为null"
+      properties:
+        code:
+          type: "string"
+          format: "uuid"
+        parentCode:
+          type: "string"
+        name:
+          type: "string"
+          format: "cword(2,10)"
+        status:
+          type: "integer"
+          enum:
+            - 0
+            - 1
+          description: "-1：已删除 0：正常"
+        activeStatus:
+          type: "integer"
+        background:
+          type: "string"
+          format: "image"
+          description: "分类绑定的图片"
+        relationCode:
+          type: "string"
+          description: "影子分类"
+        type:
+          type: "integer"
+        contentTypes:
+          type: "string"
+        description:
+          type: "string"
+          format: "cword(2,10)"
+        children:
+          type: "array"
+          description: "子分类列表"
+          items:
+            $ref: "#/definitions/Category"
+        item:
+          type: "array"
+          description: "编排"
+          items:
+            $ref: "#/definitions/CategoryItem"
+    CategoryItem:
+      type: "object"
+      description: "栏目编排"
+      properties:
+        id:
+          type: "integer"
+        categoryCode:
+          type: "string"
+          format: "uuid"
+        itemType:
+          type: "string"
+          enum:
+            - "VOD"
+            - "SERIES"
+            - "CHANNEL"
+            - "SCHEDULE"
+            - "STAR"
+            - "SUBJECT"
+            - "CATEGORY"
+          description: "VOD：电影 SERIES:电视剧 CHANNEL:直播频道 SCHEDULE:节目单 STAR:明星 SUBJECT:专题 CATEGORY:分类"
+        itemCode:
+          type: "string"
+        itemName:
+          type: "string"
+        itemStatus:
+          type: "integer"
+          enum:
+            - 0
+            - 1
+          description: "0：不可见 1：可见"
+        webContext:
+          type: "string"
+        type:
+          type: "integer"
+          description: "1：置顶 99：普通"
+        showFlag:
+          type: "string"
+          description: "1：火 2：热 3：升级 4：降级 5：不变"
+        opratorId:
+          type: "integer"
+        originName:
+          type: "string"
+        directPlay:
+          type: "integer"
+          enum:
+            - 0
+            - 1
+          description: "0：表示绑定了模板,进入detail页面; 1：表示没有绑定模板,直接播放."
+    VasBranch:
+      type: "object"
+      description: "驻地对象"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "string"
+          format: "uuid"
+        areaName:
+          type: "string"
+          format: "cword(2,10)"
+        serviceUrl:
+          type: "string"
+          format: "url"
+        port:
+          type: "string"
+        communitPassword:
+          type: "string"
+        webContext:
+          type: "string"
+        status:
+          type: "integer"
+        branchCode:
+          type: "string"
+        dummyFlag:
+          type: "integer"
+        previewUrl:
+          type: "string"
+    BadRequestError:
+      type: "object"
+      description: "请求错误"
+      properties:
+        timestamp:
+          type: "string"
+          format: "datetime"
+          description: "请求错误时间戳"
+        status:
+          type: "integer"
+          description: "请求错状态码"
+        message:
+          type: "string"
+          description: "请求错误描述"
+    FileVO:
+      type: "object"
+      description: "模板文件"
+      properties:
+        relativePath:
+          type: "string"
+          description: "路径"
+        showName:
+          type: "string"
+          description: "显示名称"
+        name:
+          type: "string"
+          description: "文件名"
+        size:
+          type: "integer"
+          description: "文件大小"
+        folder:
+          type: "boolean"
+          description: "是否是文件夹"
+        children:
+          type: "array"
+          items:
+            $ref: "#/definitions/FileVO"
+    OperatorProductGroup:
+      type: "object"
+      description: "产品组"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "string"
+        name:
+          type: "string"
+created: 1588988605914
+fileName: Insomnia Designer
+modified: 1588988718210
+parentId: wrk_b86c0214fcff4f5d9cca1c0efa7fa557
+type: ApiSpec
